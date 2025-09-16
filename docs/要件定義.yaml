@@ -1,0 +1,247 @@
+project: "yomiuri333-critical-review" version: "1.0.0" owner: "KAFKA" goals:
+
+"批判的フレームワークに基づいて、読売333（等ウェート指数）をロジカルに検証する"
+
+"TOPIX/日経225等との比較観点（バリュー/サイズ/モメンタム/リバランス）を明示"
+
+"検証結果と要約を自動生成し、READMEに常時反映"
+
+"GitHub ActionsとGitHub PagesでCI/CD & ドキュメンテーションを自動化" non_goals:
+
+"有料データベースや非公開データの利用"
+
+"将来パフォーマンスの予測提供（条件整理のみに限定）" requirements: data_sources:
+
+"公開Web資料・IR・目論見書（手動取得 or スクレイプ許可範囲）"
+
+"構成銘柄リスト（ユーザー提供CSV or 公開資料から整備）" metrics:
+
+"PBR<1倍銘柄比率（読売333 vs TOPIX）"
+
+"ROE中央値/平均（読売333 vs TOPIX）"
+
+"配当利回り平均（読売333 vs TOPIX）"
+
+"セクター分散（HHI, 上位10銘柄構成比）"
+
+"リバランス頻度影響（年1入替＋年3回ウェート調整のロジック評価）" outputs:
+
+"検証サマリー（結論/根拠/限界）をREADME.mdへ自動反映"
+
+"詳細レポート（/docs/index.html で公開）"
+
+"図表PNGは生成可だが.gitignoreで無視（必要時はSVG/HTMLで代替）" code_style: language: "Python >=3.11" formatting: "ruff + black" notebooks: "禁止（再現性のためスクリプト化）" repo_layout: root_files:
+
+"README.md"
+
+"LICENSE"
+
+".gitignore"
+
+"requirements.txt"
+
+"pyproject.toml" directories: data:
+
+"raw/           # 元データ（構成銘柄CSV, 財務指標CSV 等。機微情報は不可）"
+
+"processed/     # 正規化後のCSV（列名・型を統一）" src:
+
+"ingest/        # 取得/整形（例: csv_to_canonical.py）"
+
+"analysis/      # 指標計算（pbr_stats.py, sector_hhi.py, roe_stats.py）"
+
+"render/        # README更新・HTML生成（write_readme.py, build_site.py）"
+
+"codex/         # Codex呼び出し（codex_runner.py, prompts/）" docs:
+
+"assets/        # SVG/HTMLのみ。PNGは置かない"
+
+"templates/     # READMEテンプレ, HTMLテンプレ" .github:
+
+"workflows/     # CI/CD（lint/test/analyze/readme/pages）" gitignore:
+
+
+
+"*.png"
+
+"data/raw/*"
+
+"data/processed/*"
+
+".venv/"
+
+"pycache/"
+
+".mypy_cache/"
+
+"dist/"
+
+"build/" security: secrets:
+
+"OPENAI_API_KEY（Codex連携用。ActionsのリポジトリSecretsで設定）"
+
+"GH_TOKEN（Pagesデプロイ用。必要に応じ）" ci_cd: workflows:
+
+name: "ci.yml" path: ".github/workflows/ci.yml" content: | name: CI on: push: branches: [ main ] pull_request: branches: [ main ] jobs: lint-test: runs-on: ubuntu-latest steps: - uses: actions/checkout@v4 - uses: actions/setup-python@v5 with: { python-version: "3.11" } - run: python -m pip install --upgrade pip - run: pip install -r requirements.txt - name: Lint (ruff) run: ruff check src - name: Format check (black) run: black --check src - name: Type check (mypy) run: mypy src
+
+name: "analyze-and-readme.yml" path: ".github/workflows/analyze-and-readme.yml" content: | name: Analyze & Update README on: schedule: - cron: "0 21 * * 1-5"   # 平日 06:00 JST相当 workflow_dispatch: permissions: contents: write jobs: analyze: runs-on: ubuntu-latest steps: - uses: actions/checkout@v4 - uses: actions/setup-python@v5 with: { python-version: "3.11" } - run: pip install -r requirements.txt - name: Run Codex (optional) env: OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }} run: | python src/codex/codex_runner.py 
+--prompt src/codex/prompts/refresh_metrics.prompt.txt 
+--out data/processed/codex_notes.md || true - name: Ingest & Normalize run: | python src/ingest/csv_to_canonical.py 
+--input data/raw/yomiuri333_constituents.yaml
+--fin data/raw/financials.yaml
+--out data/processed/canonical.yaml - name: Compute Metrics run: | python src/analysis/pbr_stats.py --in data/processed/canonical.csv --out data/processed/pbr.json python src/analysis/roe_stats.py --in data/processed/canonical.csv --out data/processed/roe.json python src/analysis/sector_hhi.py --in data/processed/canonical.csv --out data/processed/hhi.json python src/analysis/yield_stats.py --in data/processed/canonical.csv --out data/processed/yield.json - name: Update README run: | python src/render/write_readme.py 
+--template docs/templates/README.template.md 
+--pbr data/processed/pbr.json 
+--roe data/processed/roe.json 
+--hhi data/processed/hhi.json 
+--yield data/processed/yield.json 
+--out README.md - name: Commit changes run: | git config user.name "github-actions[bot]" git config user.email "github-actions[bot]@users.noreply.github.com" git add README.md docs/* git commit -m "chore: auto-update README and docs [skip ci]" || echo "No changes" git push
+
+name: "pages.yml" path: ".github/workflows/pages.yml" content: | name: GitHub Pages on: push: branches: [ main ] workflow_dispatch: permissions: contents: read pages: write id-token: write jobs: build: runs-on: ubuntu-latest steps: - uses: actions/checkout@v4 - uses: actions/setup-python@v5 with: { python-version: "3.11" } - run: pip install -r requirements.txt - name: Build site run: | python src/render/build_site.py 
+--pbr data/processed/pbr.json 
+--roe data/processed/roe.json 
+--hhi data/processed/hhi.json 
+--yield data/processed/yield.json 
+--out docs/index.html - uses: actions/upload-pages-artifact@v3 with: path: docs deploy: needs: build runs-on: ubuntu-latest environment: name: github-pages url: ${{ steps.deployment.outputs.page_url }} steps: - id: deployment uses: actions/deploy-pages@v4 codex_integration: purpose: "テキスト整形・要点抽出・補助的な自動コメント生成（決定打はPython集計結果を優先）" runner_script: "src/codex/codex_runner.py" prompt_files:
+
+"src/codex/prompts/refresh_metrics.prompt.txt" call_contract:
+
+"入力: 最新メトリクス（JSON）とテンプレ指示"
+
+"出力: 補足説明文（Markdown）。README更新時に追記（任意）" secrets_required: ["OPENAI_API_KEY"] failure_handling: "Codex失敗時はスキップしてパイプライン継続" analysis_pipeline: steps:
+
+name: "構成銘柄取り込み" script: "src/ingest/csv_to_canonical.py" input:
+
+"data/raw/yomiuri333_constituents.csv   # code, name, sector"
+
+"data/raw/financials.csv                # code, date, PBR, ROE, DY, mcap 等" output: "data/processed/canonical.csv        # 正規化済み"
+
+
+name: "PBR統計" script: "src/analysis/pbr_stats.py" output: "data/processed/pbr.json" metrics:
+
+"pbr_lt1_ratio_yomiuri333"
+
+"pbr_lt1_ratio_topix"
+
+"pbr_mean/median"
+
+
+name: "ROE統計" script: "src/analysis/roe_stats.py" output: "data/processed/roe.json" metrics:
+
+"roe_median_yomiuri333"
+
+"roe_median_topix"
+
+"roe_distribution_quantiles"
+
+
+name: "配当利回り統計" script: "src/analysis/yield_stats.py" output: "data/processed/yield.json" metrics:
+
+"dy_mean/median (yomiuri333 vs topix)"
+
+
+name: "セクター集中度" script: "src/analysis/sector_hhi.py" output: "data/processed/hhi.json" metrics:
+
+"hhi_yomiuri333"
+
+"hhi_top10_weight_yomiuri333" rendering: readme_update: script: "src/render/write_readme.py" template: "docs/templates/README.template.md" must_include:
+
+"結論（要約3点）"
+
+"主要メトリクス表（PBR<1比率 / ROE中央値 / 配当利回り / HHI）"
+
+"ロジックに基づく強み/弱み（箇条書き）"
+
+"データの限界（注意事項）"
+
+"更新日時" badges:
+
+"CI Status"
+
+"Pages" site_build: script: "src/render/build_site.py" output: "docs/index.html" assets: "docs/assets/*  # SVG/HTMLのみ" docs_policy: png_policy: "PNG生成可。ただし.gitignoreで無視する。公開はSVG/HTMLに限定。" pages_branch: "github-pages（Actions管理）" root_path: "/" readme_template: path: "docs/templates/README.template.md" body: |
+
+
+
+読売333 批判的検証（自動更新）
+
+最終更新: {{ updated_at }}
+
+結論（要約）
+
+1. 読売333は等ウェート設計により「ディープバリュー寄り」になりやすく、再評価局面では相対優位。
+
+
+2. 一方で低ROE体質の影響で、恒常的な超過リターンは論理的に期待しにくい。
+
+
+3. 年1回入替＋年3回ウェート調整によりコストは抑制されるが、分散リターンは限定。
+
+
+
+主要メトリクス（自動集計）
+
+指標	読売333	TOPIX
+
+PBR<1倍比率	{{ pbr.lt1.yomiuri333 }}	{{ pbr.lt1.topix }}
+ROE中央値	{{ roe.median.yomiuri333 }}	{{ roe.median.topix }}
+配当利回り平均	{{ dy.mean.yomiuri333 }}	{{ dy.mean.topix }}
+セクター集中度（HHI）	{{ hhi.hhi_yomiuri333 }}	{{ hhi.hhi_topix }}
+
+
+> 備考: データは公開情報に基づく近似であり、推定・欠損補完が含まれる場合があります。
+
+
+
+論点の整理（ロジック）
+
+バリュー効果：PBR<1銘柄の比率が高く、再評価時は寄与が増大。
+
+サイズ効果：大型株依存が薄いため、中堅・地方企業の寄与が増える。
+
+モメンタム：逆張り調整はトレンド局面に不利。
+
+リスク：相関上昇局面では分散メリットが希薄。
+
+
+変更履歴
+
+自動更新ログ: .github/workflows/analyze-and-readme.yml
+
+
+
+licenses: code: "MIT" docs: "CC BY 4.0" tooling: dependencies: - "pandas" - "numpy" - "jinja2" - "requests" - "pyyaml" - "mypy" - "ruff" - "black" optional: - "openai>=1.0.0  # Codex連携用" scripts_spec: src/ingest/csv_to_canonical.py: | # 入力: 構成銘柄CSV（code,name,sector）, 財務CSV（code,date,PBR,ROE,DY,mcap,...） # 出力: canonical.csv（コード基準で最新期にロールアップ、列名/型を正規化） src/analysis/pbr_stats.py: | # 入力: canonical.csv # 出力: pbr.json { "lt1": { "yomiuri333": 0.XX, "topix": 0.YY }, "mean":..., "median":... } src/analysis/roe_stats.py: | # 入力: canonical.csv # 出力: roe.json { "median": { "yomiuri333":..., "topix":... }, "quantiles": {...} } src/analysis/yield_stats.py: | # 入力: canonical.csv # 出力: yield.json { "mean":..., "median":... } src/analysis/sector_hhi.py: | # 入力: canonical.csv（各銘柄のsector列を使用） # 出力: hhi.json { "hhi_yomiuri333":..., "top10_weight_yomiuri333":... } src/render/write_readme.py: | # 入力: テンプレ + JSON各種 # 出力: README.md を上書き。メトリクス欠損時はN/A表記で継続 src/render/build_site.py: | # 入力: JSON各種 # 出力: docs/index.html（Jinja2でカード/表/簡易チャートをSVG埋め込みで生成） src/codex/codex_runner.py: | # OPENAI_API_KEY を使用して prompts/refresh_metrics.prompt.txt を投げ、 # data/processed/codex_notes.md に解説を落とす（失敗時は無視） quality_gates:
+
+"CIでlint/type-checkに失敗したらREADME/Pages更新を中止"
+
+"README更新はデータとテンプレの両方が存在する場合のみ"
+
+"PNGは常に.gitignoreで無視（公開はSVG/HTML）" readme_must_have:
+
+"結論要約（3点）"
+
+"主要メトリクスの表"
+
+"ロジック上の強み/弱み"
+
+"注意事項（データ限界）"
+
+"最終更新日時" pages: enabled: true path: "docs" custom_domain: null maintenance: tasks:
+
+"構成銘柄CSVの定期更新フックを追加（手動コミット or スクリプト）"
+
+"データフォーマット変更時はingestスクリプトのスキーマ定義を更新"
+
+"指標の追加（例: マキシマムドローダウンは対象外＝価格系列が十分蓄積されるまで）" extensibility: future_metrics:
+
+"モメンタム（12-1M, 6-1M）と逆張り感応度"
+
+"イベントリスク（入替え時のリターンシーズナリティ）"
+
+"セクター別相関ヒートマップ（SVG出力）" notes:
+
+
+"このYAMLを project_spec.yaml として保存すれば、そのままセットアップ手順書兼仕様書として機能します。"
+
+"Actionsのシークレット設定後、data/raw に必要CSVを投入→pushで自動集計/README更新/Pages公開が流れます。"
+
+

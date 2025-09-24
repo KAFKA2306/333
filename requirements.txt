@@ -1,0 +1,10 @@
+pandas
+numpy
+jinja2
+requests
+PyYAML
+mypy
+ruff
+black
+openai>=1.0.0
+pytest

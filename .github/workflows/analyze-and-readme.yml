@@ -1,0 +1,84 @@
+name: Analyze & Update README
+
+on:
+  schedule:
+    - cron: "0 21 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Detect raw data
+        id: data_check
+        run: |
+          if [ -f data/raw/yomiuri333_constituents.yaml ] && [ -f data/raw/financials.yaml ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run Codex (optional)
+        if: steps.data_check.outputs.ready == 'true'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python src/codex/codex_runner.py \
+            --prompt src/codex/prompts/refresh_metrics.prompt.txt \
+            --out data/processed/codex_notes.md || true
+      - name: Ingest & Normalize
+        if: steps.data_check.outputs.ready == 'true'
+        run: |
+          python src/ingest/csv_to_canonical.py \
+            --input data/raw/yomiuri333_constituents.yaml \
+            --fin data/raw/financials.yaml \
+            --out data/processed/canonical.csv
+      - name: Compute Metrics
+        if: steps.data_check.outputs.ready == 'true'
+        run: |
+          python src/analysis/pbr_stats.py --in data/processed/canonical.csv --out data/processed/pbr.json
+          python src/analysis/roe_stats.py --in data/processed/canonical.csv --out data/processed/roe.json
+          python src/analysis/sector_hhi.py --in data/processed/canonical.csv --out data/processed/hhi.json
+          python src/analysis/yield_stats.py --in data/processed/canonical.csv --out data/processed/yield.json
+      - name: Update README
+        if: steps.data_check.outputs.ready == 'true'
+        run: |
+          python src/render/write_readme.py \
+            --template docs/templates/README.template.md \
+            --pbr data/processed/pbr.json \
+            --roe data/processed/roe.json \
+            --hhi data/processed/hhi.json \
+            --yield data/processed/yield.json \
+            --notes data/processed/codex_notes.md \
+            --out README.md
+      - name: Build site
+        if: steps.data_check.outputs.ready == 'true'
+        run: |
+          python src/render/build_site.py \
+            --pbr data/processed/pbr.json \
+            --roe data/processed/roe.json \
+            --hhi data/processed/hhi.json \
+            --yield data/processed/yield.json \
+            --notes data/processed/codex_notes.md \
+            --out docs/index.html
+      - name: Commit changes
+        if: steps.data_check.outputs.ready == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add README.md docs/index.html docs/templates/README.template.md docs/templates/site.template.html data/processed || true
+          git commit -m "chore: auto-update README and docs [skip ci]" || echo "No changes"
+          git push
+      - name: Skip when data unavailable
+        if: steps.data_check.outputs.ready != 'true'
+        run: echo "Raw data not available; skipping analysis."

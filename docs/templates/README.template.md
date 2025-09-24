@@ -1,8 +1,8 @@
 # 読売333 批判的検証（自動更新）
 
-[![CI Status](https://github.com/OWNER/REPO/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/ci.yml) [![Pages](https://github.com/OWNER/REPO/actions/workflows/pages.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/pages.yml)
+[![CI Status]({{ badges.ci.image }})]({{ badges.ci.link }}) [![Pages]({{ badges.pages.image }})]({{ badges.pages.link }})
 
-最終更新: 2025-09-16 03:45 UTC
+最終更新: {{ updated_at }}
 
 ## 結論（要約）
 1. 読売333は等ウェート設計によりディープバリュー要素が強く、景気循環の再評価局面で相対優位を取りやすい。
@@ -12,41 +12,46 @@
 ## 主要メトリクス（自動集計）
 | 指標 | 読売333 | TOPIX |
 | --- | --- | --- |
-| PBR<1倍比率 | N/A | N/A |
-| ROE中央値 | N/A | N/A |
-| 配当利回り平均 | N/A | N/A |
-| セクター集中度（HHI） | N/A | N/A |
-| 上位10銘柄構成比 | N/A | N/A |
+| PBR<1倍比率 | {{ pbr.lt1.yomiuri333 | format_percent }} | {{ pbr.lt1.topix | format_percent }} |
+| ROE中央値 | {{ roe.median.yomiuri333 | format_number }} | {{ roe.median.topix | format_number }} |
+| 配当利回り平均 | {{ dy.mean.yomiuri333 | format_percent(2) }} | {{ dy.mean.topix | format_percent(2) }} |
+| セクター集中度（HHI） | {{ hhi.hhi.yomiuri333 | format_number(3) }} | {{ hhi.hhi.topix | format_number(3) }} |
+| 上位10銘柄構成比 | {{ hhi.top10_weight.yomiuri333 | format_percent(1) }} | {{ hhi.top10_weight.topix | format_percent(1) }} |
 
 > 備考: データは公開情報に基づく近似値であり、欠損補完・推定が含まれる場合があります。
 
 ## ロジック上の強み
-
+{% if logic.strengths %}
+{% for item in logic.strengths %}- {{ item }}
+{% endfor %}
+{% else %}
 - データ不足のため強みを特定できません。
-
+{% endif %}
 
 ## ロジック上の弱み
-
+{% if logic.weaknesses %}
+{% for item in logic.weaknesses %}- {{ item }}
+{% endfor %}
+{% else %}
 - データ不足のため弱みを特定できません。
-
+{% endif %}
 
 ## データの限界（注意事項）
-
-- PBRデータが不足しており、バリュー特性の検証に不確実性があります。
-- ROE指標の欠損があり、収益性評価には注意が必要です。
-- 配当利回りデータが欠落しており、インカム特性の評価が難しい状況です。
-- セクター情報不足により集中度のトレースが困難です。
-- 上位構成比データが欠損しており、個別銘柄集中の検証に制約があります。
-
-
+{% if logic.cautions %}
+{% for item in logic.cautions %}- {{ item }}
+{% endfor %}
+{% endif %}
 - 公開情報ベースでの推定値であり、速報値・リバランス時のタイムラグを含む可能性があります。
 - 算出ロジックは自動化済みですが、入力データの更新頻度・品質に依存します。
 
 ## モニタリングノート
-
+{% if notes %}
+{{ notes }}
+{% else %}
 - 最新のCodexコメントは未取得です（OPENAI_API_KEY未設定またはエラー）。
-
+{% endif %}
 
 ## 変更履歴
 - 自動更新ワークフロー: [Analyze & Update README](.github/workflows/analyze-and-readme.yml)
 - 静的サイト出力: [docs/index.html](docs/index.html)
+

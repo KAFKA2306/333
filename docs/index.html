@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>読売333 批判的検証ダッシュボード</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+        line-height: 1.6;
+      }
+      body {
+        margin: 0 auto;
+        padding: 2rem;
+        max-width: 960px;
+        background: #f7f7f8;
+        color: #111;
+      }
+      header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #ccc;
+      }
+      h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2rem;
+      }
+      .metrics-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      }
+      .metrics-table th,
+      .metrics-table td {
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        text-align: right;
+      }
+      .metrics-table th:first-child,
+      .metrics-table td:first-child {
+        text-align: left;
+      }
+      section {
+        margin-bottom: 2rem;
+      }
+      ul {
+        margin: 0;
+        padding-left: 1.2rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+      }
+      .card {
+        background: #fff;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      }
+      footer {
+        font-size: 0.85rem;
+        color: #555;
+        border-top: 1px solid #ccc;
+        padding-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>読売333 批判的検証ダッシュボード</h1>
+      <p>最終更新: 2025-09-16 03:45 UTC</p>
+    </header>
+
+    <section>
+      <h2>主要メトリクス</h2>
+      <table class="metrics-table">
+        <thead>
+          <tr>
+            <th>指標</th>
+            <th>読売333</th>
+            <th>TOPIX</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PBR&lt;1倍比率</td>
+            <td>N/A</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td>ROE中央値</td>
+            <td>N/A</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td>配当利回り平均</td>
+            <td>N/A</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td>セクターHHI</td>
+            <td>N/A</td>
+            <td>N/A</td>
+          </tr>
+          <tr>
+            <td>上位10銘柄構成比</td>
+            <td>N/A</td>
+            <td>N/A</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>自動インサイト</h2>
+      <div class="card">
+        <ul>
+          
+          
+          <li>バリュー: PBRデータが不足しているため比較できません。</li>
+          
+          <li>収益性: ROE中央値の比較ができません。</li>
+          
+          <li>インカム: 配当利回りデータが不足しています。</li>
+          
+          <li>集中度: セクター情報が不足しています。</li>
+          
+          
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>強みと弱み</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>ロジック上の強み</h3>
+          <ul>
+            
+            <li>強みを判定するためのデータが不足しています。</li>
+            
+          </ul>
+        </div>
+        <div class="card">
+          <h3>ロジック上の弱み</h3>
+          <ul>
+            
+            <li>弱みを判定するためのデータが不足しています。</li>
+            
+          </ul>
+        </div>
+        <div class="card">
+          <h3>注意事項</h3>
+          <ul>
+            
+            
+            <li>PBRデータが不足しており、バリュー特性の検証に不確実性があります。</li>
+            
+            <li>ROE指標の欠損があり、収益性評価には注意が必要です。</li>
+            
+            <li>配当利回りデータが欠落しており、インカム特性の評価が難しい状況です。</li>
+            
+            <li>セクター情報不足により集中度のトレースが困難です。</li>
+            
+            <li>上位構成比データが欠損しており、個別銘柄集中の検証に制約があります。</li>
+            
+            
+            <li>公開情報ベースの推定値であり、速報値や欠損補完が含まれる場合があります。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>モニタリングノート</h2>
+      <div class="card">
+        
+        <p>Codexコメントは未取得です。GitHub Actionsのシークレット設定を確認してください。</p>
+        
+      </div>
+    </section>
+
+    <footer>
+      <p>CI: <a href="../.github/workflows/ci.yml">ci.yml</a>｜Pages: <a href="../.github/workflows/pages.yml">pages.yml</a></p>
+      <p>Generated automatically by analyze-and-readme workflow.</p>
+    </footer>
+  </body>
+</html>

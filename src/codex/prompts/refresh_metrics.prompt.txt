@@ -1,0 +1,5 @@
+You are assisting with an automated review of the Yomiuri 333 equal-weight index.
+Summarize the latest valuation (PBR), profitability (ROE), income (dividend yield),
+and concentration (HHI/top 10 weight) metrics compared with TOPIX.
+Provide concise bullet points (<=5) written in Japanese, focusing on logical
+implications and highlighting any data limitations.

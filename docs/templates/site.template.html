@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>読売333 批判的検証ダッシュボード</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: "Segoe UI", "Hiragino Kaku Gothic ProN", sans-serif;
+        line-height: 1.6;
+      }
+      body {
+        margin: 0 auto;
+        padding: 2rem;
+        max-width: 960px;
+        background: #f7f7f8;
+        color: #111;
+      }
+      header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #ccc;
+      }
+      h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2rem;
+      }
+      .metrics-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+        background: #fff;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      }
+      .metrics-table th,
+      .metrics-table td {
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        text-align: right;
+      }
+      .metrics-table th:first-child,
+      .metrics-table td:first-child {
+        text-align: left;
+      }
+      section {
+        margin-bottom: 2rem;
+      }
+      ul {
+        margin: 0;
+        padding-left: 1.2rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+      }
+      .card {
+        background: #fff;
+        padding: 1rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+      }
+      footer {
+        font-size: 0.85rem;
+        color: #555;
+        border-top: 1px solid #ccc;
+        padding-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>読売333 批判的検証ダッシュボード</h1>
+      <p>最終更新: {{ updated_at }}</p>
+    </header>
+
+    <section>
+      <h2>主要メトリクス</h2>
+      <table class="metrics-table">
+        <thead>
+          <tr>
+            <th>指標</th>
+            <th>読売333</th>
+            <th>TOPIX</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>PBR&lt;1倍比率</td>
+            <td>{{ pbr.lt1.yomiuri333 | format_percent }}</td>
+            <td>{{ pbr.lt1.topix | format_percent }}</td>
+          </tr>
+          <tr>
+            <td>ROE中央値</td>
+            <td>{{ roe.median.yomiuri333 | format_number }}</td>
+            <td>{{ roe.median.topix | format_number }}</td>
+          </tr>
+          <tr>
+            <td>配当利回り平均</td>
+            <td>{{ dy.mean.yomiuri333 | format_percent(2) }}</td>
+            <td>{{ dy.mean.topix | format_percent(2) }}</td>
+          </tr>
+          <tr>
+            <td>セクターHHI</td>
+            <td>{{ hhi.hhi.yomiuri333 | format_number(3) }}</td>
+            <td>{{ hhi.hhi.topix | format_number(3) }}</td>
+          </tr>
+          <tr>
+            <td>上位10銘柄構成比</td>
+            <td>{{ hhi.top10_weight.yomiuri333 | format_percent(1) }}</td>
+            <td>{{ hhi.top10_weight.topix | format_percent(1) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>自動インサイト</h2>
+      <div class="card">
+        <ul>
+          {% if insights %}
+          {% for item in insights %}
+          <li>{{ item }}</li>
+          {% endfor %}
+          {% else %}
+          <li>メトリクスが不足しているため自動インサイトを生成できません。</li>
+          {% endif %}
+        </ul>
+      </div>
+    </section>
+
+    <section>
+      <h2>強みと弱み</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>ロジック上の強み</h3>
+          <ul>
+            {% if logic.strengths %}
+            {% for item in logic.strengths %}
+            <li>{{ item }}</li>
+            {% endfor %}
+            {% else %}
+            <li>強みを判定するためのデータが不足しています。</li>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="card">
+          <h3>ロジック上の弱み</h3>
+          <ul>
+            {% if logic.weaknesses %}
+            {% for item in logic.weaknesses %}
+            <li>{{ item }}</li>
+            {% endfor %}
+            {% else %}
+            <li>弱みを判定するためのデータが不足しています。</li>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="card">
+          <h3>注意事項</h3>
+          <ul>
+            {% if logic.cautions %}
+            {% for item in logic.cautions %}
+            <li>{{ item }}</li>
+            {% endfor %}
+            {% endif %}
+            <li>公開情報ベースの推定値であり、速報値や欠損補完が含まれる場合があります。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>モニタリングノート</h2>
+      <div class="card">
+        {% if notes %}
+        <pre>{{ notes }}</pre>
+        {% else %}
+        <p>Codexコメントは未取得です。GitHub Actionsのシークレット設定を確認してください。</p>
+        {% endif %}
+      </div>
+    </section>
+
+    <footer>
+      <p>CI: <a href="../.github/workflows/ci.yml">ci.yml</a>｜Pages: <a href="../.github/workflows/pages.yml">pages.yml</a></p>
+      <p>Generated automatically by analyze-and-readme workflow.</p>
+    </footer>
+  </body>
+</html>

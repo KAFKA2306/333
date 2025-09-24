@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=65"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yomiuri333-critical-review"
+version = "0.1.0"
+description = "Automation toolkit for analyzing the Yomiuri 333 equal-weight index"
+authors = [
+  {name = "KAFKA"}
+]
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+  "E",
+  "F",
+  "B",
+  "UP",
+  "I",
+]
+ignore = []
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+pretty = true

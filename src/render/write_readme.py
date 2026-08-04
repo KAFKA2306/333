@@ -1,4 +1,5 @@
 """Render the project README from the Jinja template and metric files."""
+
 # ruff: noqa: I001
 
 from __future__ import annotations
@@ -47,7 +48,9 @@ def main() -> None:
     roe_metrics = load_metrics(args.roe)
     hhi_metrics = load_metrics(args.hhi)
     dy_metrics = load_metrics(args.yield_file)
-    logic = derive_logic_summary(pbr_metrics, roe_metrics, dy_metrics, hhi_metrics)
+    logic = derive_logic_summary(
+        pbr_metrics, roe_metrics, dy_metrics, hhi_metrics
+    )
     context: dict[str, Any] = {
         "updated_at": current_timestamp(),
         "pbr": wrap_metrics(pbr_metrics),

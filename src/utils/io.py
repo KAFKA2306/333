@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-import yaml  # type: ignore[import-untyped]
+import yaml
 
 
 def load_dataframe(path: str | Path) -> pd.DataFrame:

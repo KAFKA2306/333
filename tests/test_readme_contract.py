@@ -10,9 +10,7 @@ def test_human_readme_has_real_repository_badges() -> None:
 
 
 def test_generated_template_has_no_fixed_investment_conclusion() -> None:
-    template = (ROOT / "docs/templates/README.template.md").read_text(
-        encoding="utf-8"
-    )
+    template = (ROOT / "docs/templates/README.template.md").read_text(encoding="utf-8")
     prohibited = (
         "ディープバリュー要素が強い",
         "低ROE・低モメンタム",

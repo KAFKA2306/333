@@ -1,4 +1,5 @@
 """Compute valuation-related indicators for the canonical dataset."""
+
 # ruff: noqa: I001
 
 from __future__ import annotations

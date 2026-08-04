@@ -1,4 +1,5 @@
 """Render the project README from the Jinja template and metric files."""
+
 # ruff: noqa: I001
 
 from __future__ import annotations

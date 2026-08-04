@@ -1,4 +1,5 @@
 """Compute ROE distribution statistics per index."""
+
 # ruff: noqa: I001
 
 from __future__ import annotations

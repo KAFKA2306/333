@@ -1,4 +1,5 @@
 """Compute concentration metrics such as Herfindahl-Hirschman Index."""
+
 # ruff: noqa: I001
 
 from __future__ import annotations

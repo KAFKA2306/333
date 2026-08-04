@@ -18,7 +18,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import pandas as pd  # noqa: E402
-import yaml  # type: ignore[import-untyped]  # noqa: E402
+import yaml  # noqa: E402
 
 from utils.io import dump_yaml  # noqa: E402
 

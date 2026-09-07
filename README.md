@@ -9,6 +9,23 @@
 
 公開site: https://kafka2306.github.io/333/
 
+## Vision
+
+読売333がTOPIXより良いか悪いかを先に決めるのではなく、同じ基準日、比較可能な財務定義、構成銘柄の証拠を揃えてから、両指数の特徴差を検証できる研究体験を作ります。
+
+## Design philosophy
+
+- 指数設計だけからvalue、quality、momentumなどの性質を推測しない
+- raw data不足を0や固定文章で埋めて結論を作らない
+- constituent membership、weight、effective dateを財務metricから切り離さない
+- Actual / forecast、連結 / 単体、period / as-ofを揃えて比較する
+- raw dataの再配布条件を確認してから公開する
+- workflowのskipを分析成功として扱わない
+
+## Why / 差別化
+
+価値はPython、Pages、CIそのものではありません。比較前提が揃っていない場合は「dataがないなら結論もない」をREADME、UI、automationで一貫して維持し、証拠が揃った時だけmetricを生成できることにあります。
+
 ## 検証する問い
 
 - 読売333とTOPIXでPBR分布はどう違うか
